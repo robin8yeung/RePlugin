@@ -40,7 +40,6 @@ buildscript {
 
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.0'
-        classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
         classpath 'com.github.dcendents:android-maven-plugin:1.2'
     }
 }
