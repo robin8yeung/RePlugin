@@ -45,7 +45,7 @@ class PluginDebugger {
 
         File apkDir = new File(globalScope.getBuildDir(), "outputs" + File.separator + "apk")
 
-        String unsigned = (GradleCompat.getSigningConfig() == null
+        String unsigned = (GradleCompat.getSigningConfig(this.variant) == null
                 ? "-unsigned.apk"
                 : ".apk");
         String apkName = apkBaseName + unsigned
