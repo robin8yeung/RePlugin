@@ -23,6 +23,7 @@ import com.qihoo360.replugin.gradle.host.creator.FileCreators
 import com.qihoo360.replugin.gradle.host.creator.IFileCreator
 import com.qihoo360.replugin.gradle.host.creator.impl.json.PluginBuiltinJsonCreator
 import com.qihoo360.replugin.gradle.host.handlemanifest.ComponentsGenerator
+import com.qihoo360.replugin.gradle.compat.GradleCompat
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.LogLevel
@@ -58,15 +59,12 @@ public class Replugin implements Plugin<Project> {
                 }
 
                 def generateBuildConfigTask = VariantCompat.getGenerateBuildConfigTask(variant)
-                def appID = generateBuildConfigTask.appPackageName
+                def appID = GradleCompat.getAppID(variant)
                 def newManifest = ComponentsGenerator.generateComponent(appID, config)
                 println "${TAG} countTask=${config.countTask}"
 
-                def variantData = variant.variantData
-                def scope = variantData.scope
-
                 //host generate task
-                def generateHostConfigTaskName = scope.getTaskName(AppConstant.TASK_GENERATE, "HostConfig")
+                def generateHostConfigTaskName = GradleCompat.getTaskNameFromVariantScope(variant, AppConstant.TASK_GENERATE, "HostConfig")
                 def generateHostConfigTask = project.task(generateHostConfigTaskName)
 
                 generateHostConfigTask.doLast {
@@ -81,7 +79,7 @@ public class Replugin implements Plugin<Project> {
                 }
 
                 //json generate task
-                def generateBuiltinJsonTaskName = scope.getTaskName(AppConstant.TASK_GENERATE, "BuiltinJson")
+                def generateBuiltinJsonTaskName = GradleCompat.getTaskNameFromVariantScope(variant, AppConstant.TASK_GENERATE, "BuiltinJson")
                 def generateBuiltinJsonTask = project.task(generateBuiltinJsonTaskName)
 
                 generateBuiltinJsonTask.doLast {
@@ -94,6 +92,12 @@ public class Replugin implements Plugin<Project> {
                 if (mergeAssetsTask) {
                     generateBuiltinJsonTask.dependsOn mergeAssetsTask
                     mergeAssetsTask.finalizedBy generateBuiltinJsonTask
+
+                    if (GradleCompat.isGeAGP410()) {
+                        def compressAssetsName = GradleCompat.getTaskNameFromVariantScope(variant, 'compress', 'Assets')
+                        def compressAssetsTask = project.tasks.getByName(compressAssetsName)
+                        compressAssetsTask.mustRunAfter(generateBuiltinJsonTask)
+                    }
                 }
 
                 variant.outputs.each { output ->
@@ -140,9 +144,7 @@ public class Replugin implements Plugin<Project> {
 
     // 添加 【查看所有插件信息】 任务
     def addShowPluginTask(def variant) {
-        def variantData = variant.variantData
-        def scope = variantData.scope
-        def showPluginsTaskName = scope.getTaskName(AppConstant.TASK_SHOW_PLUGIN, "")
+        def showPluginsTaskName = GradleCompat.getTaskNameFromVariantScope(variant, AppConstant.TASK_SHOW_PLUGIN, "")
         def showPluginsTask = project.task(showPluginsTaskName)
 
         showPluginsTask.doLast {

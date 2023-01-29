@@ -18,9 +18,8 @@
 package com.qihoo360.replugin.gradle.plugin.inner
 
 import com.android.build.api.transform.*
-import com.android.build.gradle.AppPlugin
-import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.internal.pipeline.TransformManager
+import com.qihoo360.replugin.gradle.compat.GradleCompat
 import com.qihoo360.replugin.gradle.plugin.injector.IClassInjector
 import com.qihoo360.replugin.gradle.plugin.injector.Injectors
 import javassist.ClassPool
@@ -44,11 +43,7 @@ public class ReClassTransform extends Transform {
 
     public ReClassTransform(Project p) {
         this.project = p
-        def appPlugin = project.plugins.getPlugin(AppPlugin)
-        // taskManager 在 2.1.3 中为 protected 访问类型的，在之后的版本为 private 访问类型的，
-        // 使用反射访问
-        def taskManager = BasePlugin.metaClass.getProperty(appPlugin, "taskManager")
-        this.globalScope = taskManager.globalScope;
+        this.globalScope = GradleCompat.getProjectGlobalScope(project)
     }
 
     @Override

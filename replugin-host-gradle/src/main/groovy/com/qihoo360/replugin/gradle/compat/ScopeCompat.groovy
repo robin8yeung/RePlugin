@@ -1,6 +1,8 @@
 package com.qihoo360.replugin.gradle.compat
 
 import com.android.sdklib.IAndroidTarget
+import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.provider.Provider
 
 /**
  * @author hyongbai
@@ -12,7 +14,12 @@ class ScopeCompat {
             return scope.androidBuilder.sdkInfo.adb
         }
         if (scopeClz.hasProperty(scope, "sdkComponents")) {
-            return scope.sdkComponents.adbExecutableProvider.get()
+            def sdkComponents = scope.sdkComponents
+            if (sdkComponents instanceof Provider) sdkComponents = sdkComponents.get()
+            def adbExeFile = sdkComponents.adbExecutableProvider.get()
+            // 4.1.0 拿到的类型是：org.gradle.api.internal.file.DefaultFilePropertyFactory$FixedFile
+            if (adbExeFile instanceof FileSystemLocation) adbExeFile = adbExeFile.getAsFile()
+            return adbExeFile
         }
     }
 
@@ -34,7 +41,9 @@ class ScopeCompat {
             return scope.getAndroidBuilder().getTarget().getPath(IAndroidTarget.ANDROID_JAR)
         }
         if (scopeClz.hasProperty(scope, "sdkComponents")) {
-            return scope.sdkComponents.androidJarProvider.get().getAbsolutePath()
+            def sdkComponents = scope.sdkComponents
+            if (sdkComponents instanceof Provider) sdkComponents = sdkComponents.get()
+            return sdkComponents.androidJarProvider.get().getAbsolutePath()
         }
     }
 }

@@ -17,6 +17,8 @@
 
 package com.qihoo360.replugin.gradle.plugin.manifest
 
+import com.qihoo360.replugin.gradle.compat.GradleCompat
+
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
@@ -66,7 +68,7 @@ public class ManifestAPI {
             } catch (Exception e) {
 //                manifestOutputFile = new File(processManifestTask.getManifestOutputDirectory(), "AndroidManifest.xml")
 //                instantRunManifestOutputFile = new File(processManifestTask.getInstantRunManifestOutputDirectory(), "AndroidManifest.xml")
-                def dir = processManifestTask.getManifestOutputDirectory()
+                def dir = GradleCompat.getManifestOutputFile(processManifestTask)
                 if (dir instanceof File || dir instanceof String) {
                     manifestOutputFile = new File(dir, "AndroidManifest.xml")
                 } else {
