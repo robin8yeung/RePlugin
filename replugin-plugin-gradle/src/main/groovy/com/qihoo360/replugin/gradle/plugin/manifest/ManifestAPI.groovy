@@ -74,11 +74,8 @@ public class ManifestAPI {
                 } else {
                     manifestOutputFile = new File(dir.getAsFile().get(), "AndroidManifest.xml")
                 }
-                try {
-                    dir = processManifestTask.getInstantRunManifestOutputDirectory()
-                }catch(Exception e1){
-                    dir = processManifestTask.getInstantAppManifestOutputDirectory()
-                }
+                // 适配高版本 android build gradle 插件
+                dir = GradleCompat.getInstantRunManifestOutputFile(processManifestTask)
                 if (dir instanceof File || dir instanceof String) {
                     instantRunManifestOutputFile = new File(dir, "AndroidManifest.xml")
                 } else {
