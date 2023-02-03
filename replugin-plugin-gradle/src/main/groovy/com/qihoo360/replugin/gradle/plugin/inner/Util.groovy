@@ -23,7 +23,6 @@ import com.android.build.api.transform.TransformInput
 import com.google.common.base.Charsets
 import com.google.common.hash.Hashing
 import com.qihoo360.replugin.gradle.compat.ScopeCompat
-import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
 
 import java.nio.file.Files
@@ -95,34 +94,35 @@ public class Util {
 
                 } else {
 
-                    includeJars << jarPath
-                    map.put(jarPath, jarPath)
-
-                    /* 将 jar 包解压，并将解压后的目录加入 classpath */
-                    // println ">>> 解压Jar${jarPath}"
-                    String jarZipDir = jar.getParent() + File.separatorChar + jar.getName().replace('.jar', '')
-                    if (unzip(jarPath, jarZipDir)) {
-                        classPath << jarZipDir
-
-                        visitor.setBaseDir(jarZipDir)
-                        Files.walkFileTree(Paths.get(jarZipDir), visitor)
-                    }
-
-                    // 删除 jar
-                    FileUtils.forceDelete(jar)
-
-                    // 注：参考上面第三方 aar 包修改的方式，将工程 libs 下的 jar 包解压到 exploded-jar 目录后修改，这样不会影响原始jar内容
-//                    String jarZipDir = project.getBuildDir().path +
-//                            File.separator + FD_INTERMEDIATES + File.separator + "exploded-jar" +
-//                            File.separator + jar.getName().replace('.jar', '') + File.separator + "class";
+                    // 注：原版 RePlugin 对工程 libs 下的 jar 包进行直接修改替换，这将导致原始 jar 包中的类字节码变化！！！
+//                    includeJars << jarPath
+//                    map.put(jarPath, jarPath)
+//
+//                    /* 将 jar 包解压，并将解压后的目录加入 classpath */
+//                    // println ">>> 解压Jar${jarPath}"
+//                    String jarZipDir = jar.getParent() + File.separatorChar + jar.getName().replace('.jar', '')
 //                    if (unzip(jarPath, jarZipDir)) {
-//                        def jarZip = jarZipDir + ".jar"
-//                        includeJars << jarPath
 //                        classPath << jarZipDir
+//
 //                        visitor.setBaseDir(jarZipDir)
 //                        Files.walkFileTree(Paths.get(jarZipDir), visitor)
-//                        map.put(jarPath, jarZip)
 //                    }
+//
+//                    // 删除 jar
+//                    FileUtils.forceDelete(jar)
+
+                    // 注：参考上面第三方 aar 包修改的方式，将工程 libs 下的 jar 包解压到 exploded-jar 目录后修改，这样不会影响原始jar内容
+                    String jarZipDir = project.getBuildDir().path +
+                            File.separator + FD_INTERMEDIATES + File.separator + "exploded-jar" +
+                            File.separator + jar.getName().replace('.jar', '') + File.separator + "class";
+                    if (unzip(jarPath, jarZipDir)) {
+                        def jarZip = jarZipDir + ".jar"
+                        includeJars << jarPath
+                        classPath << jarZipDir
+                        visitor.setBaseDir(jarZipDir)
+                        Files.walkFileTree(Paths.get(jarZipDir), visitor)
+                        map.put(jarPath, jarZip)
+                    }
                 }
             }
         }
